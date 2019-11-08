@@ -138,7 +138,7 @@ type tcpTransporter struct {
 	Logger *log.Logger
 
 	// TCP connection
-	mu           sync.Mutex
+	mu           sync.RWMutex
 	conn         net.Conn
 	closeTimer   *time.Timer
 	lastActivity time.Time
@@ -234,6 +234,12 @@ func (mb *tcpTransporter) Close() error {
 	defer mb.mu.Unlock()
 
 	return mb.close()
+}
+
+func (mb *tcpTransporter) Connected() bool {
+	mb.mu.RLock()
+	defer mb.mu.RUnlock()
+	return mb.conn != nil
 }
 
 // flush flushes pending data in the connection,
